@@ -26,10 +26,10 @@ def main():
     valid_moves = chess_game.get_valid_moves()
     move_made = False  # flag variable for when a move is made
     load_images()
-    draw_chess_game(screen, chess_game)
+    selected_square = ()  # stores the column and row of the tile that was selected
+    draw_chess_game(screen, chess_game, valid_moves, selected_square)
     clock = pg.time.Clock()
     running = True
-    selected_square = ()  # stores the column and row of the tile that was selected
     player_click = [] # this will be two tuples, where the first tuple is the first selected tile and the second
     # tuple is where the user wants to move the chess piece
 
@@ -71,15 +71,16 @@ def main():
             valid_moves = chess_game.get_valid_moves()
             move_made = False
 
-        draw_chess_game(screen, chess_game)
+        draw_chess_game(screen, chess_game, valid_moves, selected_square)
         clock.tick(15)
         pg.display.flip()
 
-def draw_chess_game(screen, chess_game):
+def draw_chess_game(screen, chess_game, valid_moves, selected_square):
     """
     Creates the chess game with the board and pieces
     """
     draw_board(screen)  # draw tiles
+    highlight_squares(screen, chess_game, valid_moves, selected_square)
     draw_pieces(screen, chess_game.board)  # draw pieces on top of the tiles
 
 
@@ -87,7 +88,7 @@ def draw_board(screen):
     """
     Draws the tiles on the board by looping through 8 rows and columns
     """
-    colors = [pg.Color("white"), pg.Color("gray")]
+    colors = [pg.Color(235,232,206), pg.Color(122,148,85)]
     for row in range(num_of_rows):
         for col in range(num_of_rows):
             color = colors[((row + col) % 2)]
@@ -106,6 +107,25 @@ def draw_pieces(screen, board):
                 screen.blit(chess_piece_images[chess_piece],
                             pg.Rect(col * tile_size, row * tile_size, tile_size, tile_size))
 
+def highlight_squares(screen, chess_game, valid_moves, selected_square):
+    """
+    This will highlight the selected square and then show in a different highlighted color, the possible moves for that
+    piece.
+    """
+    if selected_square != ():
+        row, col = selected_square
+        if chess_game.board[row][col][0] == ('W' if chess_game.white_to_move else "B"):
+        # We need to make sure the selected square is a piece that can be moved on the user's turn.
+        # We can use an if statement inside an if statement to keep it short
+            h = pg.Surface((tile_size, tile_size))
+            h.set_alpha(125) # this sets the level of transparency (0 to 255)
+            h.fill(pg.Color('blue')) # chooses the color of the piece
+            screen.blit(h, (col * tile_size, row * tile_size)) # places the color defined above on the tile
+            # we also need to highlight the moves of that square
+            h.fill(pg.Color('red')) # chooses the color of the possible moves
+            for move in valid_moves:
+                if move.start_row == row and move.start_col == col: # this means that the move is starting from the piece
+                    screen.blit(h, (move.end_col * tile_size, move.end_row * tile_size))
 
 if __name__ == "__main__":
     main()
